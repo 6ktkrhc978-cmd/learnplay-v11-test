@@ -134,6 +134,10 @@ function renderQs(){
   <label class="small"><input type="radio" name="correct${i}" ${q[2]===j?'checked':''} onchange="editQs[${i}][2]=${j}"> صحيحة</label>
  </div>`).join('')}
  <div class="field"><input value="${esc(q[3]||'')}" oninput="editQs[${i}][3]=this.value" placeholder="تلميح أو شرح بعد الإجابة"></div>
+ <div class="media"><b>🎙️ تسجيل السؤال (اختياري)</b><div class="small muted">لو عايزة صوت بنت/طفل حقيقي، ارفعي تسجيلًا واضحًا للسؤال.</div>
+ <input type="file" accept="audio/*" onchange="readQAudio(${i},this)">
+ ${q[4]?`<audio class="audio" controls src="${q[4]}"></audio>`:''}
+ </div>
  </div>`).join('');
 }
 function addq(){window.editQs.push(['سؤال جديد',['اختيار أول','اختيار ثانٍ','اختيار ثالث'],0,'تلميح بسيط يساعد الطالب.']);renderQs()}
@@ -151,6 +155,11 @@ function readFile(inp,prev){
  if(f.size>4*1024*1024){alert('اختاري ملفًا أصغر من 4MB حتى يعمل النشاط بسلاسة على الهاتف.');inp.value='';return}
  let r=new FileReader();r.onload=()=>{inp.dataset.data=r.result;let x=document.getElementById(prev);x.src=r.result;x.classList.remove('hide')};r.readAsDataURL(f)
 }
+function readQAudio(i,inp){
+ let f=inp.files[0]; if(!f)return;
+ if(f.size>4*1024*1024){alert('اختاري تسجيلًا أصغر من 4MB.');inp.value='';return}
+ let r=new FileReader(); r.onload=()=>{window.editQs[i][4]=r.result; renderQs()}; r.readAsDataURL(f);
+}
 function saveA(){
  if(!t.value.trim()){alert('اكتبي عنوان النشاط أولًا.');return}
  if(!window.editQs.length){alert('أضيفي سؤالًا واحدًا على الأقل.');return}
@@ -161,21 +170,33 @@ function saveA(){
 function deleteActivity(id){if(!confirm('حذف هذا النشاط؟'))return;db.activities=db.activities.filter(a=>a.id!==id);save();cur=null;home()}
 function arabicVoices(){
  if(!('speechSynthesis' in window))return [];
- return speechSynthesis.getVoices().filter(v=>/^ar([_-]|$)/i.test(v.lang)||/arab/i.test(v.name));
+ return speechSynthesis.getVoices().filter(v=>{const n=(v.name+' '+v.voiceURI).toLowerCase(); return (/^ar([_-]|$)/i.test(v.lang)||/arab/i.test(v.name)) && !/(maged|majed|majid|mohamed|mohammed|ماجد|مجيد|محمد)/i.test(n)});
 }
+function femaleScore(v){
+ const n=(v.name+' '+v.voiceURI).toLowerCase();
+ const female=['female','woman','girl','sara','sarah','mariam','maryam','layla','laila','nour','noor','nora','nada','reem','rima','salma','fatma','fatima','amira','heba','hana','hanna','zeina','zaina','lina','leila','mona','aya','aya','siri female'];
+ const male=['male','man','boy','maged','majid','tarik','tariq','hoda?'];
+ let score=0;
+ female.forEach(x=>{if(n.includes(x))score+=5});
+ male.forEach(x=>{if(n.includes(x))score-=3});
+ if(/ar-eg|ar_sa|ar-ae|ar-jo|ar-kw/i.test(v.lang))score+=1;
+ return score;
+}
+function sortedArabicVoices(){return arabicVoices().slice().sort((a,b)=>femaleScore(b)-femaleScore(a)||a.name.localeCompare(b.name));}
 function fillVoices(){
  let s=document.getElementById('voiceSelect');if(!s)return;
- let vs=arabicVoices();
- if(!vs.length){s.innerHTML='<option value="">الصوت العربي سيظهر بعد تفعيل أصوات الجهاز</option>';return}
- s.innerHTML=vs.map((v,i)=>`<option value="${i}">${esc(v.name)} — ${esc(v.lang)}</option>`).join('');
+ let vs=sortedArabicVoices();
+ if(!vs.length){s.innerHTML='<option value="">لم نجد صوتًا عربيًا مثبتًا — استخدمي تسجيلًا صوتيًا للسؤال</option>';return}
+ s.innerHTML=vs.map((v,i)=>`<option value="${i}">${esc((femaleScore(v)>0?'👩 ':'🔊 ')+v.name)} — ${esc(v.lang)}</option>`).join('');
 }
 function speak(txt){
  if(!('speechSynthesis' in window)){alert('النطق الصوتي غير مدعوم في هذا المتصفح.');return}
  speechSynthesis.cancel();
- let u=new SpeechSynthesisUtterance(txt);u.lang=document.getElementById('langSelect')?.value||'ar-EG';
- u.rate=Number(document.getElementById('speedSelect')?.value||.78);u.pitch=1;u.volume=1;
- let vs=arabicVoices(),sel=document.getElementById('voiceSelect'),chosen=vs[Number(sel?.value||0)];
- if(chosen)u.voice=chosen;
+ let u=new SpeechSynthesisUtterance(txt);
+ u.lang=document.getElementById('langSelect')?.value||'ar-EG';
+ u.rate=Number(document.getElementById('speedSelect')?.value||.72);u.pitch=Number(document.getElementById('pitchSelect')?.value||1.12);u.volume=1;
+ let vs=sortedArabicVoices(),sel=document.getElementById('voiceSelect'),chosen=vs[Number(sel?.value||0)];
+ if(chosen && !/(maged|majed|majid|ماجد|مجيد)/i.test(chosen.name+' '+chosen.voiceURI))u.voice=chosen;
  speechSynthesis.speak(u)
 }
 if('speechSynthesis' in window){speechSynthesis.addEventListener('voiceschanged',fillVoices)}
@@ -192,16 +213,16 @@ function student(){
  <div class="media"><b>🗣️ صوت القراءة</b>
   <div class="grid">
    <div><label class="small">الصوت</label><select id="voiceSelect" style="width:100%;padding:10px;border-radius:12px"><option>جاري تحميل الأصوات العربية...</option></select></div>
-   <div><label class="small">السرعة</label><select id="speedSelect" style="width:100%;padding:10px;border-radius:12px"><option value="0.68">بطيء وواضح</option><option value="0.78" selected>واضح وطبيعي</option><option value="0.9">طبيعي</option></select></div>
+   <div><label class="small">السرعة</label><select id="speedSelect" style="width:100%;padding:10px;border-radius:12px"><option value="0.62">بطيء جدًا وواضح</option><option value="0.72" selected>بطيء وواضح</option><option value="0.82">طبيعي</option></select></div>
   </div>
-  <div class="row" style="margin-top:8px"><select id="langSelect" style="padding:9px;border-radius:10px"><option value="ar-EG">عربي — مصر</option><option value="ar-SA">عربي — السعودية</option><option value="ar">عربي — تلقائي</option></select>
+  <div class="row" style="margin-top:8px"><label class="small">نبرة الصوت</label><select id="pitchSelect" style="padding:9px;border-radius:10px"><option value="1.05">طبيعية</option><option value="1.12" selected>أنعم وأقرب لصوت بنت</option><option value="1.2">أعلى قليلًا</option></select><select id="langSelect" style="padding:9px;border-radius:10px"><option value="ar-EG">عربي — مصر</option><option value="ar-SA">عربي — السعودية</option><option value="ar">عربي — تلقائي</option></select>
   <button class="listen" onclick="speak('${esc(a.desc||'اقرأ التعليمات ثم اختر الإجابة الصحيحة.')}')">🔊 استمع للتعليمات</button></div>
   <div class="small muted">لو الصوت مش واضح، اختاري «بطيء وواضح» وجربي صوتًا عربيًا آخر.</div>
  </div>
  ${a.audio?`<audio class="audio" controls src="${a.audio}"></audio>`:''}
  ${a.qs.map((q,i)=>`<div class="card">
    <h3>${i+1}. ${esc(q[0])}</h3>
-   <button class="listen" onclick="speak('${esc(q[0])}')">🔊 استمع للسؤال</button>
+   ${q[4]?`<button class="listen" onclick="document.getElementById('qa${i}').play()">🎙️ اسمع السؤال بصوت التسجيل</button><audio id="qa${i}" class="audio" controls src="${q[4]}"></audio>`:`<button class="listen" onclick="speak('${esc(q[0])}')">👩🔊 استمع بصوت عربي واضح</button>`}
    ${q[1].map((o,j)=>`<button class="option" data-q="${i}" onclick="pick(${i},${j},this)">${esc(o)}</button>`).join('')}
    ${q[3]?`<div class="hint">💡 ${esc(q[3])}</div>`:''}
  </div>`).join('')}
