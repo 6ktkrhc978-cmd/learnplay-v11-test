@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b55d6">
+<link rel="manifest" href="manifest.json">
+<title>Learn & Play v11</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f6f7fb;color:#20233d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif}
+.app{max-width:980px;margin:auto;padding:12px}
+header{background:linear-gradient(135deg,#5751d0,#746ee9);color:#fff;padding:20px;border-radius:24px;margin-bottom:12px;box-shadow:0 10px 30px #4f46c722}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand h1{margin:0 0 4px;font-size:28px}.logo{font-weight:900;font-size:24px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.nav{background:#ffffff22;color:#fff}.active{background:#fff;color:#5751d0}
+.card{background:#fff;border:1px solid #e4e5ef;border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 4px 18px #30345a08}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field{display:grid;gap:7px;margin:11px 0}
+.field input,.field select,.field textarea,.qinput{padding:12px;border:1px solid #ddd;border-radius:12px;font:inherit;background:#fff;width:100%}
+.field textarea{min-height:86px;resize:vertical}
+button{font:inherit;border:0;border-radius:14px;padding:11px 15px;font-weight:800;cursor:pointer}
+.btn{background:#5b55d6;color:#fff}.alt{background:#efefff;color:#5b55d6}.danger{background:#fff0f0;color:#c33}
+.media{padding:14px;border:2px dashed #d8d7f7;border-radius:16px;margin:12px 0}
+.preview{max-width:100%;max-height:240px;border-radius:14px;margin-top:10px;display:block}.audio{width:100%;margin-top:10px}
+.option{display:block;width:100%;text-align:right;background:#fff;border:2px solid #e2e3ed;margin:8px 0}
+.option.selected{border-color:#5b55d6;background:#f0efff}.option.correct{border-color:#32a56a;background:#effbf5}
+.listen{background:#e9f7ff;color:#1673a8;margin:6px 0}.hint{background:#fff8df;border:1px solid #f1df9b;border-radius:14px;padding:10px;margin:10px 0}
+.pill{display:inline-block;background:#efefff;color:#5b55d6;padding:6px 10px;border-radius:99px;font-size:13px;margin:3px}
+.muted{color:#74788f}.small{font-size:13px}.hide{display:none}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.progress{height:10px;background:#ececf5;border-radius:99px;overflow:hidden}.progress>span{display:block;height:100%;background:#5b55d6}
+.notice{padding:12px;border-radius:14px;background:#f5f7ff;border:1px solid #e1e3ff;margin:10px 0}
+.qcard{border:2px solid #ececf6}.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.filelabel{display:inline-block;background:#eeeef7;color:#555;padding:9px 12px;border-radius:12px;font-weight:700;cursor:pointer}
+input[type=file]{max-width:100%}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.brand{align-items:flex-start}.brand h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <div><h1>Learn & Play</h1><div>محرر الأنشطة التفاعلية — v11</div></div>
+    <div class="logo">L&P</div>
+  </div>
+  <nav>
+    <button class="nav active" onclick="page('home',this)">الرئيسية</button>
+    <button class="nav" onclick="page('editor',this)">محرر النشاط 🎨</button>
+    <button class="nav" onclick="page('student',this)">وضع الطالب 👨‍🎓</button>
+    <button class="nav" onclick="page('report',this)">التقدم 📊</button>
+  </nav>
+</header>
+<main id="main"></main>
+</div>
+
+<script>
+const K='lp_v11_complete';
+const IMG='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420">
+<rect width="900" height="420" rx="32" fill="#eef0ff"/>
+<text x="450" y="92" text-anchor="middle" font-size="48" font-family="Arial" font-weight="700" fill="#3c3d63">الحواس الخمس</text>
+<g font-family="Arial" font-size="76" text-anchor="middle"><text x="130" y="235">👁️</text><text x="300" y="235">👂</text><text x="470" y="235">👃</text><text x="640" y="235">👅</text><text x="800" y="235">✋</text></g>
+<text x="450" y="350" text-anchor="middle" font-size="30" font-family="Arial" fill="#6b6f91">نشاط تعلّم واكتشاف</text></svg>`);
+const DEMO={
+ activities:[{
+  id:1,title:'رحلة الحواس الخمس 👁️👂👃👅✋',desc:'استمعي للتعليمات، ثم اختاري الإجابة الصحيحة. يمكنك إعادة الاستماع للسؤال في أي وقت.',image:IMG,audio:'',
+  age:'4–7 سنوات',level:'مبتدئ',need:'مهارات الإدراك والحواس',
+  qs:[
+   ['أي حاسة نستخدمها لرؤية الألوان؟',['👁️ حاسة البصر','👂 حاسة السمع','👃 حاسة الشم'],0,'العين تساعدنا على رؤية الأشياء والألوان.'],
+   ['أي حاسة نستخدمها لسماع صوت الجرس؟',['👅 التذوق','👂 السمع','✋ اللمس'],1,'الأذن تساعدنا على سماع الأصوات.'],
+   ['أي حاسة تساعدنا على معرفة رائحة الورد؟',['👃 الشم','👁️ البصر','👂 السمع'],0,'الأنف يساعدنا على تمييز الروائح.'],
+   ['أي حاسة نستخدمها لمعرفة طعم التفاحة؟',['✋ اللمس','👅 التذوق','👁️ البصر'],1,'اللسان يساعدنا على تمييز الطعوم.'],
+   ['ماذا نستخدم لمعرفة أن الكوب دافئ؟',['✋ اللمس','👂 السمع','👃 الشم'],0,'الجلد واليد يساعداننا على الشعور بالحرارة والملمس.'],
+   ['أي اختيار يمثل حاسة البصر؟',['👁️ عين','👂 أذن','👃 أنف'],0,'العين مرتبطة بحاسة البصر.'],
+   ['إذا سمعنا صوت المطر، أي حاسة نستخدم؟',['👂 السمع','👅 التذوق','✋ اللمس'],0,'نستخدم الأذن لسماع المطر.'],
+   ['ما الحاسة التي تساعدنا على تمييز الحلو والمالح؟',['👁️ البصر','👅 التذوق','👃 الشم'],1,'اللسان يساعدنا على تمييز مذاقات الطعام.']
+  ]
+ }],
+ progress:{}
+};
+let db=JSON.parse(localStorage.getItem(K)||'null')||DEMO;
+if(!db.activities?.length){db=DEMO;save()}
+let cur=null, answers={}, currentRun=null;
+
+function save(){localStorage.setItem(K,JSON.stringify(db))}
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function uid(){return Date.now()+Math.floor(Math.random()*100000)}
+function page(p,b){
+ document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active')); if(b)b.classList.add('active');
+ if(p==='editor')editor(); else if(p==='student')student(); else if(p==='report')report(); else home();
+}
+function home(){
+ main.innerHTML=`<div class="card"><h2>🎨 أنشطة متعددة الحواس</h2>
+ <p class="muted">أنشئي نشاطًا مناسبًا للعمر والمستوى، مع صور وصوت وأسئلة وتلميحات، ثم جرّبيه في وضع الطالب.</p>
+ <div class="row"><button class="btn" onclick="editor()">+ إنشاء نشاط</button><button class="alt" onclick="student()">👨‍🎓 تجربة وضع الطالب</button></div></div>
+ <div class="grid">${db.activities.map(a=>`
+ <div class="card"><h3>${esc(a.title)}</h3><p>${esc(a.desc||'')}</p>
+ <span class="pill">${a.qs?.length||0} أسئلة</span>${a.age?`<span class="pill">العمر: ${esc(a.age)}</span>`:''}
+ ${a.level?`<span class="pill">${esc(a.level)}</span>`:''}
+ <div class="row" style="margin-top:10px"><button class="btn" onclick="openStudent(${a.id})">تشغيل</button><button class="alt" onclick="editActivity(${a.id})">تعديل</button></div>
+ </div>`).join('')}</div>`;
+}
+function editActivity(id){cur=db.activities.find(a=>a.id===id);editor()}
+function editor(){
+ let a=cur||{id:null,title:'',desc:'',image:'',audio:'',age:'',level:'مبتدئ',need:'',qs:[['',['اختيار أول','اختيار ثانٍ','اختيار ثالث'],0,'']]};
+ main.innerHTML=`<div class="card"><h2>محرر نشاط حقيقي 🎨</h2>
+ <div class="grid">
+  <div class="field"><label>عنوان النشاط</label><input id="t" value="${esc(a.title)}"></div>
+  <div class="field"><label>العمر المستهدف</label><input id="age" value="${esc(a.age||'')} " placeholder="مثال: 6–8 سنوات"></div>
+ </div>
+ <div class="grid">
+  <div class="field"><label>المستوى</label><select id="level"><option ${a.level==='مبتدئ'?'selected':''}>مبتدئ</option><option ${a.level==='متوسط'?'selected':''}>متوسط</option><option ${a.level==='متقدم'?'selected':''}>متقدم</option></select></div>
+  <div class="field"><label>المهارة/المجال</label><input id="need" value="${esc(a.need||'')} " placeholder="مثال: الانتباه والتمييز"></div>
+ </div>
+ <div class="field"><label>التعليمات</label><textarea id="d">${esc(a.desc||'')}</textarea></div>
+ <div class="media"><b>🖼️ صورة النشاط</b><div class="small muted">استخدمي صورًا غير حساسة أثناء الاختبار.</div>
+  <input id="im" type="file" accept="image/*"><img id="ip" class="preview ${a.image?'':'hide'}" src="${a.image||''}" alt="صورة النشاط">
+ </div>
+ <div class="media"><b>🔊 صوت النشاط</b><div class="small muted">يمكن رفع تسجيل، أو استخدام النطق العربي المدمج في وضع الطالب.</div>
+  <input id="au" type="file" accept="audio/*"><audio id="ap" class="audio ${a.audio?'':'hide'}" controls src="${a.audio||''}"></audio>
+ </div>
+ <div id="qs"></div>
+ <div class="row"><button class="alt" onclick="addq()">+ إضافة سؤال</button><button class="alt" onclick="addQuickQuestions()">✨ إضافة 3 أسئلة جاهزة</button></div>
+ <div class="row" style="margin-top:14px"><button class="btn" onclick="saveA()">💾 حفظ النشاط</button>${a.id?`<button class="danger" onclick="deleteActivity(${a.id})">حذف النشاط</button>`:''}</div>
+ </div>`;
+ window.editQs=JSON.parse(JSON.stringify(a.qs||[])); renderQs();
+ document.getElementById('im').onchange=e=>readFile(e.target,'ip');
+ document.getElementById('au').onchange=e=>readFile(e.target,'ap');
+}
+function renderQs(){
+ qs.innerHTML=window.editQs.map((q,i)=>`<div class="card qcard">
+ <div class="qhead"><b>السؤال ${i+1}</b><button class="danger" onclick="removeQ(${i})">حذف</button></div>
+ <div class="field"><input class="qinput" value="${esc(q[0])}" oninput="editQs[${i}][0]=this.value" placeholder="اكتبي السؤال هنا"></div>
+ ${q[1].map((o,j)=>`<div class="row" style="margin:7px 0">
+  <input class="qinput" style="flex:1" value="${esc(o)}" oninput="editQs[${i}][1][${j}]=this.value" placeholder="اختيار ${j+1}">
+  <label class="small"><input type="radio" name="correct${i}" ${q[2]===j?'checked':''} onchange="editQs[${i}][2]=${j}"> صحيحة</label>
+ </div>`).join('')}
+ <div class="field"><input value="${esc(q[3]||'')}" oninput="editQs[${i}][3]=this.value" placeholder="تلميح أو شرح بعد الإجابة"></div>
+ <div class="media"><b>🎙️ تسجيل السؤال (اختياري)</b><div class="small muted">لو عايزة صوت بنت/طفل حقيقي، ارفعي تسجيلًا واضحًا للسؤال.</div>
+ <input type="file" accept="audio/*" onchange="readQAudio(${i},this)">
+ ${q[4]?`<audio class="audio" controls src="${q[4]}"></audio>`:''}
+ </div>
+ </div>`).join('');
+}
+function addq(){window.editQs.push(['سؤال جديد',['اختيار أول','اختيار ثانٍ','اختيار ثالث'],0,'تلميح بسيط يساعد الطالب.']);renderQs()}
+function addQuickQuestions(){
+ const more=[
+ ['أي شيء نستخدمه للشم؟',['👃 الأنف','👁️ العين','👂 الأذن'],0,'الأنف يساعدنا على الشم.'],
+ ['أي شيء نستخدمه للسمع؟',['✋ اليد','👂 الأذن','👅 اللسان'],1,'الأذن تساعدنا على سماع الأصوات.'],
+ ['أي حاسة نستخدمها لمعرفة ملمس القماش؟',['✋ اللمس','👃 الشم','👅 التذوق'],0,'الجلد يساعدنا على الإحساس بالملمس.']
+ ];
+ window.editQs.push(...more);renderQs();
+}
+function removeQ(i){if(window.editQs.length<=1){alert('لازم يفضل سؤال واحد على الأقل.');return}window.editQs.splice(i,1);renderQs()}
+function readFile(inp,prev){
+ let f=inp.files[0];if(!f)return;
+ if(f.size>4*1024*1024){alert('اختاري ملفًا أصغر من 4MB حتى يعمل النشاط بسلاسة على الهاتف.');inp.value='';return}
+ let r=new FileReader();r.onload=()=>{inp.dataset.data=r.result;let x=document.getElementById(prev);x.src=r.result;x.classList.remove('hide')};r.readAsDataURL(f)
+}
+function readQAudio(i,inp){
+ let f=inp.files[0]; if(!f)return;
+ if(f.size>4*1024*1024){alert('اختاري تسجيلًا أصغر من 4MB.');inp.value='';return}
+ let r=new FileReader(); r.onload=()=>{window.editQs[i][4]=r.result; renderQs()}; r.readAsDataURL(f);
+}
+function saveA(){
+ if(!t.value.trim()){alert('اكتبي عنوان النشاط أولًا.');return}
+ if(!window.editQs.length){alert('أضيفي سؤالًا واحدًا على الأقل.');return}
+ let a={id:cur?.id||uid(),title:t.value.trim(),desc:d.value.trim(),age:age.value.trim(),level:level.value,need:need.value.trim(),
+ image:im.dataset.data||cur?.image||'',audio:au.dataset.data||cur?.audio||'',qs:window.editQs};
+ let i=db.activities.findIndex(x=>x.id===a.id);if(i<0)db.activities.push(a);else db.activities[i]=a;save();cur=null;alert('تم حفظ النشاط بنجاح ✅');home()
+}
+function deleteActivity(id){if(!confirm('حذف هذا النشاط؟'))return;db.activities=db.activities.filter(a=>a.id!==id);save();cur=null;home()}
+function arabicVoices(){
+ if(!('speechSynthesis' in window))return [];
+ return speechSynthesis.getVoices().filter(v=>/^ar([_-]|$)/i.test(v.lang)||/arab/i.test(v.name));
+}
+function femaleScore(v){
+ const n=(v.name+' '+v.voiceURI).toLowerCase();
+ const female=['female','woman','girl','sara','sarah','mariam','maryam','layla','laila','nour','noor','nora','nada','reem','rima','salma','fatma','fatima','amira','heba','hana','hanna','zeina','zaina','lina','leila','mona','aya','aya','siri female'];
+ const male=['male','man','boy','maged','majid','tarik','tariq','hoda?'];
+ let score=0;
+ female.forEach(x=>{if(n.includes(x))score+=5});
+ male.forEach(x=>{if(n.includes(x))score-=3});
+ if(/ar-eg|ar_sa|ar-ae|ar-jo|ar-kw/i.test(v.lang))score+=1;
+ return score;
+}
+function sortedArabicVoices(){return arabicVoices().slice().sort((a,b)=>femaleScore(b)-femaleScore(a)||a.name.localeCompare(b.name));}
+function fillVoices(){
+ let s=document.getElementById('voiceSelect');if(!s)return;
+ let vs=sortedArabicVoices();
+ if(!vs.length){s.innerHTML='<option value="">لم نجد صوتًا عربيًا مثبتًا — استخدمي تسجيلًا صوتيًا للسؤال</option>';return}
+ s.innerHTML=vs.map((v,i)=>`<option value="${i}">${esc((femaleScore(v)>0?'👩 ':'🔊 ')+v.name)} — ${esc(v.lang)}</option>`).join('');
+}
+function speak(txt){
+ if(!('speechSynthesis' in window)){alert('النطق الصوتي غير مدعوم في هذا المتصفح.');return}
+ speechSynthesis.cancel();
+ let u=new SpeechSynthesisUtterance(txt);
+ u.lang=document.getElementById('langSelect')?.value||'ar-EG';
+ u.rate=Number(document.getElementById('speedSelect')?.value||.72);u.pitch=Number(document.getElementById('pitchSelect')?.value||1.12);u.volume=1;
+ let vs=sortedArabicVoices(),sel=document.getElementById('voiceSelect'),chosen=vs[Number(sel?.value||0)];
+ if(chosen)u.voice=chosen;
+ speechSynthesis.speak(u)
+}
+if('speechSynthesis' in window){speechSynthesis.addEventListener('voiceschanged',fillVoices)}
+function openStudent(id){cur=db.activities.find(a=>a.id===id);student()}
+function student(){
+ let a=cur||db.activities[0];
+ if(!a){main.innerHTML='<div class="card">لا توجد أنشطة بعد.</div>';return}
+ answers={};currentRun={id:a.id,started:Date.now()};
+ let p=db.progress?.[a.id]||{attempts:0,best:0,last:0};
+ main.innerHTML=`<div class="card">
+ <div class="row" style="justify-content:space-between"><div><h2 style="margin:0">${esc(a.title)} 🎯</h2><p class="muted">${esc(a.desc||'')}</p></div><span class="pill">${a.qs.length} أسئلة</span></div>
+ ${a.age?`<span class="pill">العمر: ${esc(a.age)}</span>`:''}${a.level?`<span class="pill">${esc(a.level)}</span>`:''}
+ ${a.image?`<img class="preview" src="${a.image}" alt="صورة تعليمية للنشاط">`:''}
+ <div class="media"><b>🗣️ صوت القراءة</b>
+  <div class="grid">
+   <div><label class="small">الصوت</label><select id="voiceSelect" style="width:100%;padding:10px;border-radius:12px"><option>جاري تحميل الأصوات العربية...</option></select></div>
+   <div><label class="small">السرعة</label><select id="speedSelect" style="width:100%;padding:10px;border-radius:12px"><option value="0.62">بطيء جدًا وواضح</option><option value="0.72" selected>بطيء وواضح</option><option value="0.82">طبيعي</option></select></div>
+  </div>
+  <div class="row" style="margin-top:8px"><label class="small">نبرة الصوت</label><select id="pitchSelect" style="padding:9px;border-radius:10px"><option value="1.05">طبيعية</option><option value="1.12" selected>أنعم وأقرب لصوت بنت</option><option value="1.2">أعلى قليلًا</option></select><select id="langSelect" style="padding:9px;border-radius:10px"><option value="ar-EG">عربي — مصر</option><option value="ar-SA">عربي — السعودية</option><option value="ar">عربي — تلقائي</option></select>
+  <button class="listen" onclick="speak('${esc(a.desc||'اقرأ التعليمات ثم اختر الإجابة الصحيحة.')}')">🔊 استمع للتعليمات</button></div>
+  <div class="small muted">لو الصوت مش واضح، اختاري «بطيء وواضح» وجربي صوتًا عربيًا آخر.</div>
+ </div>
+ ${a.audio?`<audio class="audio" controls src="${a.audio}"></audio>`:''}
+ ${a.qs.map((q,i)=>`<div class="card">
+   <h3>${i+1}. ${esc(q[0])}</h3>
+   ${q[4]?`<button class="listen" onclick="document.getElementById('qa${i}').play()">🎙️ اسمع السؤال بصوت التسجيل</button><audio id="qa${i}" class="audio" controls src="${q[4]}"></audio>`:`<button class="listen" onclick="speak('${esc(q[0])}')">👩🔊 استمع بصوت عربي واضح</button>`}
+   ${q[1].map((o,j)=>`<button class="option" data-q="${i}" onclick="pick(${i},${j},this)">${esc(o)}</button>`).join('')}
+   ${q[3]?`<div class="hint">💡 ${esc(q[3])}</div>`:''}
+ </div>`).join('')}
+ <div class="notice">📌 الأسئلة التي لم تتم الإجابة عنها تُحسب غير مجابة.</div>
+ <button class="btn" onclick="submitActivity(${a.id})">✅ تسليم النشاط</button>
+ </div>`;
+ setTimeout(fillVoices,150)
+}
+function pick(i,j,b){answers[i]=j;document.querySelectorAll(`[data-q="${i}"]`).forEach(x=>x.classList.remove('selected'));b.classList.add('selected')}
+function submitActivity(id){
+ let a=db.activities.find(x=>x.id===id),n=0;
+ a.qs.forEach((q,i)=>{if(answers[i]===q[2])n++});
+ let p=db.progress[id]||{attempts:0,best:0,last:0};p.attempts++;p.last=n;p.best=Math.max(p.best,n);db.progress[id]=p;save();
+ let unanswered=a.qs.length-Object.keys(answers).length;
+ alert(`تم تسليم النشاط 🎉\nالنتيجة: ${n}/${a.qs.length}${unanswered?`\nغير مجاب: ${unanswered}`:''}`);
+ report()
+}
+function report(){
+ let rows=db.activities.map(a=>{let p=db.progress[a.id]||{attempts:0,best:0,last:0};let pct=a.qs.length?Math.round(p.best/a.qs.length*100):0;return `<div class="card"><h3>${esc(a.title)}</h3><div class="progress"><span style="width:${pct}%"></span></div><p>أفضل نتيجة: <b>${p.best}/${a.qs.length}</b> — ${pct}%</p><p class="muted">عدد المحاولات: ${p.attempts} — آخر نتيجة: ${p.last}/${a.qs.length}</p></div>`}).join('');
+ main.innerHTML=`<div class="card"><h2>📊 التقدم</h2><p class="muted">التقدم محفوظ محليًا على هذا الجهاز في نسخة العرض التجريبية.</p></div>${rows||'<div class="card">لا توجد نتائج بعد.</div>'}`
+}
+home();
+</script>
+</body></html>
