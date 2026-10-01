@@ -5,3 +5,6 @@ Learn & Play v11 — Media Activity Editor
 - Student activity mode and scoring
 - LocalStorage demo only
 Do not use real children's sensitive data. Real deployment needs secure backend/auth/database and privacy controls.
+
+
+إصدار إصلاح: تم إصلاح زر «+ إضافة سؤال» ليضيف سؤالًا جديدًا مباشرة، مع الحفاظ على الأسئلة عند الحفظ.
