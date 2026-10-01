@@ -1,10 +1,10 @@
-Learn & Play v11 — Media Activity Editor
-- Image upload
-- Audio upload
-- Interactive questions and image-ready choices
-- Student activity mode and scoring
-- LocalStorage demo only
-Do not use real children's sensitive data. Real deployment needs secure backend/auth/database and privacy controls.
+Learn & Play v11 — محتوى تجريبي جاهز
+- نشاط الحواس الخمس مع 8 أسئلة اختيار من متعدد
+- صورة افتتاحية تعليمية مدمجة داخل التطبيق
+- قراءة التعليمات والأسئلة بصوت الجهاز عبر ميزة النطق العربية
+- تلميح وشرح قصير بعد كل سؤال
+- تقييم فوري عند تسليم النشاط
+- يمكن للمعلمة تعديل الأسئلة وإضافة أسئلة جديدة
+- يمكن رفع صور وصوت من جهازها داخل محرر النشاط
 
-
-إصدار إصلاح: تم إصلاح زر «+ إضافة سؤال» ليضيف سؤالًا جديدًا مباشرة، مع الحفاظ على الأسئلة عند الحفظ.
+تنبيه: هذه نسخة تجريبية محلية. لا تستخدمي بيانات حقيقية تخص أطفالًا أو بيانات حساسة. للاستخدام الفعلي يلزم نظام خلفي آمن، مصادقة وقاعدة بيانات وضوابط خصوصية مناسبة.
